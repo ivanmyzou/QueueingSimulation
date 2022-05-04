@@ -6,3 +6,7 @@
   
   Simulation of Queuing Process
 </div>
+
+## Licence
+
+This repository is distributed under the MIT Licence. See `LICENSE.txt` for more information. 
