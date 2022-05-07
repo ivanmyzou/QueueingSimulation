@@ -7,6 +7,8 @@
   Simulation of Queuing Process
 </div>
 
+![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
+
 ## Licence
 
 This repository is distributed under the MIT Licence. See `LICENSE.txt` for more information. 
