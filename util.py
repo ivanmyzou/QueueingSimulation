@@ -77,5 +77,11 @@ class JobList(object):
 #%%
 class Simulation(object):
     '''a queueing simulation'''
-    def __init__(self, JobList, Servers, maxtime = np.Inf): #simulate starts with idle servers
+    def __init__(self, JobList, Servers, maxtime = np.Inf): #simulate starts with all servers idle
+        pass
+
+    def run(self): #run simulations
+        pass
+
+    def evaluate(self): #evaluate results from simulations
         pass
