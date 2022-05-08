@@ -23,6 +23,12 @@ class Job(object):
         job_name = f"job {self.name}" if self.name else "a job"
         return f"{job_name} arriving at {self.a :.{self.decimals}f} with service workload {self.w :.{self.decimals}f} and priority class {self.k}"
 
+    def __lt__(self, other): #order by arrival time and then priority classes
+        return (self.a < other.a) or (self.a == other.a and self.k < other.k)
+
+    def __le__(self, other): #order by arrival time and then priority classes
+        return (self.a < other.a) or (self.a == other.a and self.k <= other.k)
+
 #%%
 class Server(object): #a server may process one job at a time
     '''a server with service rate'''
@@ -58,7 +64,7 @@ class Server(object): #a server may process one job at a time
 #%%
 class JobList(object):
     '''a list of jobs of different priority classes with information of arrival times and service workloads'''
-    def __init__(self, mode = "random", interarrivals = ("exponential", 1), workloads = ("exponential", 1)): #trace mode or random mode
+    def __init__(self, mode = "random", interarrivals = ("exponential", 1), workloads = ("exponential", 1), scale = (1, 1)): #trace mode or random mode
         '''
         mode: defaults to "random"; either "random" or "trace";
         when it is "random", generate interarrival times and service workloads based on distributions specified;
@@ -71,6 +77,8 @@ class JobList(object):
         workloads: a list with each element corresponding to a priority class
         when in random mode, for each priority class, the element is a tuple specifying the distribution and parameters
         when in trace mode, for each priority class, the element is a list with its elements representing the work loads
+
+        scale: a tuple indicating the values to scale the generated or provided interarrivals and workloads respectively
         '''
         pass
 
