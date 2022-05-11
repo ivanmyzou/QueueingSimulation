@@ -101,6 +101,10 @@ distribution = dis("beta", (1,1))
 print(distribution.mean, np.mean(distribution.generate_samples(5000)[0]))
 print(distribution.var, np.var(distribution.generate_samples(5000)[0]))
 
+distribution = dis("beta", (1,1), scale = 5)
+print(distribution.mean, np.mean(distribution.generate_samples(5000)[0]))
+print(distribution.var, np.var(distribution.generate_samples(5000)[0]))
+
 #4
 distribution = dis("chisq", (1,))
 print(distribution.mean, np.mean(distribution.generate_samples(5000)[0]))
@@ -155,3 +159,6 @@ distribution = dis("rayleigh", 5)
 print(distribution.mean, np.mean(distribution.generate_samples(5000)[0]))
 print(distribution.var, np.var(distribution.generate_samples(5000)[0]))
 
+distribution = dis("rayleigh", 2, scale = 10)
+print(distribution.mean, np.mean(distribution.generate_samples(5000)[0]))
+print(distribution.var, np.var(distribution.generate_samples(5000)[0]))

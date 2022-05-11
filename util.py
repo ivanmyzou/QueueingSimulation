@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from distribution import *
+
 #%%
 class Job(object):
     '''a job object with arrival time, service workload and priority class'''
@@ -64,7 +66,7 @@ class Server(object): #a server may process one job at a time
 #%%
 class JobList(object): #sort by (arrival time, priority class) in ascending order
     '''a list of jobs of different priority classes with information of arrival times and service workloads'''
-    def __init__(self, mode = "random", interarrivals = ("exponential", 1), workloads = ("exponential", 1), scale = (1, 1)): #trace mode or random mode
+    def __init__(self, n = 100, time_end = None, mode = "random", interarrivals = ("exponential", 1), workloads = ("exponential", 1), scale = (1, 1)): #trace mode or random mode
         '''
         mode: defaults to "random"; either "random" or "trace";
         when it is "random", generate interarrival times and service workloads based on distributions specified;
@@ -80,7 +82,38 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
 
         scale: a tuple indicating the values to scale the generated or provided interarrivals and workloads respectively
         '''
-        pass
+
+        if scale[0] <= 0 or scale[1] <= 1:
+            raise Exception('scaling factors must be nonnegative')
+        if mode not in ['trace', 'random']:
+            raise Exception('mode must be either trace or random')
+        if len(interarrivals) != len(workloads):
+            raise Exception('intearrivals and workloads must be of the same length')
+
+        if mode == 'random': #need to generate random interarrival times and service workloads
+            if type(interarrivals) == tuple: #one priority class only
+                interarrivals = [interarrivals]
+            if type(workloads) == tuple: #one priority class only
+                workloads = [workloads]
+            arrivals, service_workloads = [], [] #will be filled for each class
+            for k in range(len(interarrivals)): #priority classes
+                #arrivals
+                dis_name, parameters = interarrivals[k]
+                arr_dis = dis(dis_name = dis_name, parameters = parameters, scale = scale[0])
+                _, arrivals_element = arr_dis.generate_samples(n = n, time_end = time_end)
+                arrivals.append(arrivals_element)
+                #workloads
+                dis_name, parameters = workloads[k]
+                w_dis = dis(dis_name=dis_name, parameters=parameters, scale = scale[1])
+                workload_element, _ = w_dis.generate_samples(n = len(arrivals_element), cumsum = False) #by number of arrivals
+                service_workloads.append(workload_element)
+        else: #trace mode
+            arrivals = [] #only preparing the arrivals from interarrivals
+            for interarrivals_element in interarrivals: #interarrivals_element contains interrrivals for a class
+                arrivals_element = [interarrivals_element[0]]
+                for e in interarrivals_element[1:]:
+                    arrivals_element.append(interarrivals_element[-1] + e)
+                arrivals.append(arrivals_element)
 
 #%%
 class Simulation(object):
