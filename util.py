@@ -47,9 +47,9 @@ class Server(object): #a server may process one job at a time
             job_name = f"job {self.currentJob.name}" if self.currentJob.name else "a job"
             return (f"server with {job_name} started at {self.starttime :.{self.decimals}f} to be finished at {self.endtime :.{self.decimals}f}"
                     + f" with service time {self.endtime - self.starttime :.{self.decimals}f}"
-                    + f" with service rate {self.mu :.{self.decimals}f}" if self.mu != 1 else "")
+                    + (f" with service rate {self.mu :.{self.decimals}f}" if self.mu != 1 else ""))
         else: #not busy
-            return "a currently idle server" + f" with service rate {self.mu :.{self.decimals}f}" if self.mu != 1 else ""
+            return "a currently idle server" + (f" with service rate {self.mu :.{self.decimals}f}" if self.mu != 1 else "")
 
     def update_status(self, currenttime, newJob = None):
         if newJob: #arrival
@@ -62,7 +62,7 @@ class Server(object): #a server may process one job at a time
             self.endtime = np.Inf
 
 #%%
-class JobList(object):
+class JobList(object): #sort by (arrival time, priority class) in ascending order
     '''a list of jobs of different priority classes with information of arrival times and service workloads'''
     def __init__(self, mode = "random", interarrivals = ("exponential", 1), workloads = ("exponential", 1), scale = (1, 1)): #trace mode or random mode
         '''
