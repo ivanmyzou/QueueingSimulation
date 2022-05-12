@@ -2,6 +2,7 @@
 
 from util import *
 from distribution import *
+import heapq
 
 #%% 1 Job
 
@@ -162,3 +163,75 @@ print(distribution.var, np.var(distribution.generate_samples(5000)[0]))
 distribution = dis("rayleigh", 2, scale = 10)
 print(distribution.mean, np.mean(distribution.generate_samples(5000)[0]))
 print(distribution.var, np.var(distribution.generate_samples(5000)[0]))
+
+
+#%% 4 JobList
+
+#random number generation test
+seed = 0
+scale = (1,1)
+interarrivals = [("exponential", 2), ("norm", (2,1)), ("rayleigh", 1)]
+workloads = [("exponential", 5), ("weibull", (1,2)), ("uniform", (0,0.5))]
+
+time_end = 2000
+
+arrivals, service_workloads = [], []  # will be filled for each class
+for k in range(len(interarrivals)):  # priority classes
+    # arrivals
+    dis_name, parameters = interarrivals[k]
+    arr_dis = dis(dis_name = dis_name, parameters = parameters, scale = scale[0])
+    _, arrivals_element = arr_dis.generate_samples(n = n, time_end = time_end, seed = seed)
+    arrivals.append(arrivals_element)
+    # workloads
+    dis_name, parameters = workloads[k]
+    w_dis = dis(dis_name = dis_name, parameters = parameters, scale = scale[1])
+    workload_element, _ = w_dis.generate_samples(n = len(arrivals_element), seed = seed, cumsum=False)  # by number of arrivals
+    service_workloads.append(workload_element)
+
+print(len(service_workloads), len(arrivals))
+print(len(service_workloads[0]), len(arrivals[0]))
+print(len(service_workloads[1]), len(arrivals[1]))
+print(len(service_workloads[2]), len(arrivals[2]))
+
+distribution = dis("exp", (5,))
+print(distribution.mean, np.mean(service_workloads[0]))
+
+distribution = dis("weibull", (1,2))
+print(distribution.mean, np.mean(service_workloads[1]))
+
+distribution = dis("rayleigh", (1,))
+a = [arrivals[2][0]]
+for i in range(1, len(arrivals[2])): #arrivals back to interarrivals
+    a.append(arrivals[2][i] - arrivals[2][i-1])
+print(distribution.mean, np.mean(a))
+
+#sorting
+
+h = []
+for k in range(len(arrivals)): #a, w, k into Jobs
+    for a, w in zip(arrivals[k], service_workloads[k]):
+        heapq.heappush(h, Job(a, w, k))
+jobs_sorted = [heapq.heappop(h) for i in range(len(h))]
+
+akw = [(j.a, j.k, j.w) for j in jobs_sorted]
+
+#check for sorting
+akw == sorted(akw, key = lambda x: (x[0], x[1]))
+
+#ties in arrival time
+
+arrivals = [[1,2,5],[2,3],[2,3]]
+service_workloads = [[1,2,3],[3,2],[1,1]]
+
+h = []
+for k in range(len(arrivals)): #a, w, k into Jobs
+    for a, w in zip(arrivals[k], service_workloads[k]):
+        heapq.heappush(h, Job(a, w, k))
+jobs_sorted = [heapq.heappop(h) for i in range(len(h))]
+
+akw = [(j.a, j.k, j.w) for j in jobs_sorted]
+
+print(akw)
+
+
+

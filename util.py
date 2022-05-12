@@ -1,6 +1,7 @@
 #Utility
 
 import numpy as np
+import heapq
 
 from distribution import *
 
@@ -66,7 +67,8 @@ class Server(object): #a server may process one job at a time
 #%%
 class JobList(object): #sort by (arrival time, priority class) in ascending order
     '''a list of jobs of different priority classes with information of arrival times and service workloads'''
-    def __init__(self, n = 100, time_end = None, mode = "random", interarrivals = ("exponential", 1), workloads = ("exponential", 1), scale = (1, 1)): #trace mode or random mode
+    def __init__(self, n = 100, time_end = None, mode = "random", interarrivals = ("exponential", 1), workloads = ("exponential", 1),
+                 scale = (1, 1), seed = 0): #trace mode or random mode
         '''
         mode: defaults to "random"; either "random" or "trace";
         when it is "random", generate interarrival times and service workloads based on distributions specified;
@@ -90,6 +92,7 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
         if len(interarrivals) != len(workloads):
             raise Exception('intearrivals and workloads must be of the same length')
 
+        self.mode = mode
         if mode == 'random': #need to generate random interarrival times and service workloads
             if type(interarrivals) == tuple: #one priority class only
                 interarrivals = [interarrivals]
@@ -100,20 +103,41 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
                 #arrivals
                 dis_name, parameters = interarrivals[k]
                 arr_dis = dis(dis_name = dis_name, parameters = parameters, scale = scale[0])
-                _, arrivals_element = arr_dis.generate_samples(n = n, time_end = time_end)
+                _, arrivals_element = arr_dis.generate_samples(n = n, time_end = time_end, seed = seed)
                 arrivals.append(arrivals_element)
                 #workloads
                 dis_name, parameters = workloads[k]
-                w_dis = dis(dis_name=dis_name, parameters=parameters, scale = scale[1])
-                workload_element, _ = w_dis.generate_samples(n = len(arrivals_element), cumsum = False) #by number of arrivals
+                w_dis = dis(dis_name = dis_name, parameters = parameters, scale = scale[1])
+                workload_element, _ = w_dis.generate_samples(n = len(arrivals_element), seed = seed, cumsum = False) #by number of arrivals
                 service_workloads.append(workload_element)
         else: #trace mode
             arrivals = [] #only preparing the arrivals from interarrivals
             for interarrivals_element in interarrivals: #interarrivals_element contains interrrivals for a class
                 arrivals_element = [interarrivals_element[0]]
-                for e in interarrivals_element[1:]:
+                for e in interarrivals_element[1:]: #cumsum
                     arrivals_element.append(interarrivals_element[-1] + e)
                 arrivals.append(arrivals_element)
+                service_workloads = workloads #just to prepare for getting sorted job list
+
+        h = [] #initialise for heap
+        for k in range(len(arrivals)):  # a, w, k into Jobs
+            for a, w in zip(arrivals[k], service_workloads[k]):
+                heapq.heappush(h, Job(a, w, k))
+        self.jobs = [heapq.heappop(h) for i in range(len(h))] #sorted by arrival and then priority class
+        self.a, self.w, self.k = [], [], []
+        for j in self.jobs:
+            self.a.append(j.a)
+            self.w.append(j.w)
+            self.k.append(j.k)
+
+    def plot_a(self):
+        pass
+
+    def plot_w(self):
+        pass
+
+    def plot_k(self):
+        pass
 
 #%%
 class Simulation(object):

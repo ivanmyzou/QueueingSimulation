@@ -173,5 +173,3 @@ class dis(object): #with support as a subset of positive real numbers
             for e in interarrivals[1:]: #cumsum
                 arrivals.append(arrivals[-1] + e)
             return interarrivals, tuple(arrivals)
-
-
