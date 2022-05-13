@@ -267,14 +267,23 @@ sim = Simulation(JL)
 
 sim.run(printlog = True)
 
-
+#test simulation
 JL = JobList(time_end = 25, interarrivals = [('exp', 0.5), ('exp', 2)], workloads = [('normal', (1, 1)), ('exp', 1)])
 sim = Simulation(JL, [Server() for _ in range(2)])
 
 sim.run(logfile = 'test.log', printlog = True, comprehensive_print = True)
 
-
+#test simulation
 JL = JobList(time_end = 25, interarrivals = [('exp', 0.5), ('exp', 2)], workloads = [('normal', (1, 1)), ('exp', 1)])
 sim = Simulation(JL, [Server() for _ in range(3)])
 
 sim.run(logfile = 'test.log', printlog = True, comprehensive_print = True)
+
+#test simulation
+JL = JobList(mode = 'trace',
+             interarrivals = [[1, 4, 2, 2], [3, 0, 3, 0, 2, 0]],
+             workloads = [[1.8, 3.9, 1.9, 3.8], [8, 6.1, 2.1, 3.1, 5, 4.1]])
+print(JL.a)
+sim = Simulation(JL, [Server() for _ in range(4)])
+sim.run(printlog = True, comprehensive_print = True, decimals = 2)
+

@@ -7,7 +7,7 @@ from itertools import cycle
 from collections import Counter
 
 import matplotlib.pyplot as plt
-plt.style.use('ggplot')
+plt.style.use("ggplot")
 
 import sys
 import logging
@@ -19,13 +19,13 @@ from distribution import *
 #%%
 class Job(object):
     '''a job object with arrival time, service workload and priority class'''
-    def __init__(self, a, w, k = 0, name = '', decimals = 2): #arrival time, service workload and priority class
+    def __init__(self, a, w, k = 0, name = "", decimals = 2): #arrival time, service workload and priority class
         if a < 0:
-            raise Exception('arrival time may not be negative')
+            raise Exception("arrival time may not be negative")
         if w <= 0:
-            raise Exception('service workload must be positive')
+            raise Exception("service workload must be positive")
         if type(k) != int or k < 0:
-            raise Exception('priority class must a non-negative integer')
+            raise Exception("priority class must a non-negative integer")
 
         self.a, self.w, self.k = a, w, k
         self.name = name #job name
@@ -48,7 +48,7 @@ class Server(object): #a server may process one job at a time
     '''a server with service rate'''
     def __init__(self, mu = 1, decimals = 2): #service rate defaults to 1 so that service workload corresponds to the service time
         if mu <= 0:
-            raise Exception('service rate must be positive')
+            raise Exception("service rate must be positive")
 
         self.mu = mu
         self.currentJob = None #initialise with no job being processed
@@ -101,15 +101,15 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
             np.random.seed(seed)
 
         if scale[0] <= 0 or scale[1] <= 0:
-            raise Exception('scaling factors must be nonnegative')
-        if mode not in ['trace', 'random']:
-            raise Exception('mode must be either trace or random')
+            raise Exception("scaling factors must be nonnegative")
+        if mode not in ["trace", "random"]:
+            raise Exception("mode must be either trace or random")
         if len(interarrivals) != len(workloads):
-            raise Exception('intearrivals and workloads must be of the same length')
+            raise Exception("interarrivals and workloads must be of the same length")
 
         self.mode = mode
 
-        if mode == 'random': #need to generate random interarrival times and service workloads
+        if mode == "random": #need to generate random interarrival times and service workloads
 
             if type(interarrivals) == tuple: #one priority class only
                 interarrivals = [interarrivals]
@@ -141,7 +141,7 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
             for interarrivals_element in interarrivals: #interarrivals_element contains interrrivals for a class
                 arrivals_element = [interarrivals_element[0]]
                 for e in interarrivals_element[1:]: #cumsum
-                    arrivals_element.append(interarrivals_element[-1] + e)
+                    arrivals_element.append(arrivals_element[-1] + e)
                 arrivals.append(arrivals_element)
                 service_workloads = workloads #just to prepare for getting sorted job list
             self.interarrivals_dis, self.service_dis = None, None #not applicable
@@ -167,9 +167,9 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
         plt.scatter(self.a, k_adj, c = self.k, cmap = "cool", alpha = 0.5); #colouring by class
         plt.yticks(range(self.n_class)); #only the priority classes
         plt.ylim(-0.5, self.n_class - 0.5); #y axis limits
-        plt.ylabel('priority class');
-        plt.xlabel('time');
-        plt.title('Arrival Times');
+        plt.ylabel("priority class");
+        plt.xlabel("time");
+        plt.title("Arrival Times");
         plt.show(block = False);
         return fig
 
@@ -177,19 +177,19 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
         fig = plt.figure()
         plt.hist([[w for w, c in zip(self.w, self.k) if c == k] for k in range(self.n_class)], #workloads by class
                  alpha = 0.75, label = range(self.n_class));
-        plt.legend(loc = 'upper right', title = 'Priority Class');
-        plt.xlabel('service workload');
-        plt.title('Service Workload Distribution');
+        plt.legend(loc = "upper right", title = "Priority Class");
+        plt.xlabel("service workload");
+        plt.title("Service Workload Distribution");
         plt.show(block = False);
         return fig
 
     def plot_k(self): #count by priority class
         fig = plt.figure()
         class_count = Counter(self.k)
-        plt.bar(range(self.n_class), [class_count[k] for k in range(self.n_class)], align = 'center', alpha = 0.75);
-        plt.xlabel('priority class');
+        plt.bar(range(self.n_class), [class_count[k] for k in range(self.n_class)], align = "center", alpha = 0.75);
+        plt.xlabel("priority class");
         plt.xticks(range(self.n_class));
-        plt.title('Job Count by Priority Class');
+        plt.title("Job Count by Priority Class");
         plt.show(block = False);
         return fig
 
@@ -202,36 +202,39 @@ class Simulation(object):
         self.Servers = Servers #when there are multiple idle servers, the one with min index is prioritised for processing
         self.n_servers = len(Servers)
         if maxtime <= 0:
-            raise Exception('max time must be positive')
+            raise Exception("max time must be positive")
         self.maxtime = maxtime
 
-    def run(self, logfile = '', printlog = False, comprehensive_print = False, decimals = 5): #run simulations
+    def run(self, logfile = "", printlog = False, comprehensive_print = False, decimals = 5): #run simulations
 
         #setting up the loggers
         logger.handlers = [] #cleaning up handlers to avoid duplicated printing
 
         JL = self.JobList
         queues = [[] for k in range(JL.n_class)] #separate queue for each class
-        jobs = JL.jobs + [Job(np.Inf, np.Inf, 0, 'never')]
+        jobs = JL.jobs + [Job(np.Inf, np.Inf, 0, "never")]
         masterclock = 0 #initialise the time, simulations stop upon reaching max time or completing all jobs
         Servers = self.Servers.copy()
+
+        #set up for response, waiting and service time by priority class and server busy times
+        self.statistics = {}
 
         if printlog: #print in console
             logger.addHandler(logging.StreamHandler(sys.stdout))
 
         if logfile: #print in the log if provided
-            logfile += '' if logfile.endswith('.log') else '.log'
+            logfile += '' if logfile.endswith(".log") else ".log"
             logger.addHandler(logging.FileHandler(logfile))
 
         log_flag = bool(logfile or printlog) #whether to print log at all
         if log_flag:
-            logger.info('#' * 50 + '  simulation starts  ')
+            logger.info("#" * 50 + "  simulation starts  ")
             if self.maxtime < np.Inf:
-                logger.info(f'time up to {self.maxtime :.{decimals}f}\n')
+                logger.info(f"time up to {self.maxtime :.{decimals}f}\n")
             else:
-                logger.info(f'until all jobs completed\n')
-            logger.info('=' * 10 + f' masterclock {masterclock :.{decimals}f}')
-            logger.info('')
+                logger.info(f"until all jobs completed\n")
+            logger.info("=" * 10 + f" masterclock {masterclock :.{decimals}f}")
+            logger.info("")
 
         #simulation loop
         while masterclock <= self.maxtime:
@@ -242,64 +245,64 @@ class Simulation(object):
 
             if event_time == np.inf:  #no more events to come
                 if log_flag:
-                    logger.info('#' * 50 + '  simulation ends by completion of all arrived jobs ')
+                    logger.info("#" * 50 + "  simulation ends by completion of all arrived jobs ")
                 break
             elif event_time > self.maxtime: #beyond max time for simulation
                 if log_flag:
-                    logger.info('#' * 50 + '  simulation ends by reaching end time {self.maxtime} ')
+                    logger.info("#" * 50 + "  simulation ends by reaching end time {self.maxtime} ")
                 break
             else: #simulation continues
                 masterclock = event_time  #advance masterclock to event time
                 if log_flag:
-                    logger.info('=' * 10 + f' masterclock {masterclock :.{decimals}f}')
+                    logger.info("=" * 10 + f" masterclock {masterclock :.{decimals}f}")
 
             ##### arrival event
             if event_type == self.n_servers: #arrival
                 arrived_job = jobs.pop(0) #this job just arrived, it will either go into a queue or go into a server (processor)
 
                 if log_flag:
-                    logger.info(f'job arrival with workload {arrived_job.w :.{decimals}f}' +
-                                (f' and priority class {arrived_job.k}' if JL.n_class > 1 else '')) #not printing priority class if there is only class
+                    logger.info(f"job arrival with workload {arrived_job.w :.{decimals}f}" +
+                                (f" and priority class {arrived_job.k}" if JL.n_class > 1 else "")) #not printing priority class if there is only class
 
                 for i, s in enumerate(Servers): #iterate over all servers to see if the arrived job can be assigned
                     if s.endtime == np.Inf: #idle server found
                         s.update_status(masterclock, arrived_job)
                         if log_flag:
-                            logger.info('assigning into server' + (f' {i} ' if self.n_servers > 1 else ' ') #if only one server not printing the server index
-                                        + f'and will finish at {s.endtime :.{decimals}f}')
+                            logger.info("assigning into server" + (f" {i} " if self.n_servers > 1 else " ") #if only one server not printing the server index
+                                        + f"and will finish at {s.endtime :.{decimals}f}")
                         break
                 else: #did not break so go into the queue
                     if log_flag:
-                        logger.info(f'go into queue')
+                        logger.info("go into queue")
                     queues[arrived_job.k].append(arrived_job) #append into the queue of the corresponding priority class
 
             ##### departure event
             else: #departure (event_type is the index of the server)
                 if log_flag:
-                    logger.info(f'departure at server' + (f' {event_type}' if self.n_servers > 1 else '') #if only one server not printing the server index
+                    logger.info("departure at server" + (f" {event_type}" if self.n_servers > 1 else "") #if only one server not printing the server index
                                 )
                 s = Servers[event_type] #server of interest
 
                 for i, q in enumerate(queues): #iterate over queues of all priority classes in priority order
                     if q: #this queue is not empty
                         if log_flag:
-                            logger.info('assigning first in the queue ' +
-                                        (f'of priority class {arrived_job.k} to the server' if JL.n_class > 1 else 'to the server')) #not printing priority class if there is only class
+                            logger.info("assigning first in the queue " +
+                                        (f"of priority class {arrived_job.k} to the server" if JL.n_class > 1 else "to the server")) #not printing priority class if there is only class
                         assign_job = q.pop(0) #first one in the queue
                         s.update_status(masterclock, assign_job)
                         break
                 else: #did not break so no one in the queue
                     if log_flag:
-                        logger.info('the server becomes idle')
+                        logger.info("the server becomes idle")
                     s.update_status(masterclock) #the server becomes idle
 
             if comprehensive_print and log_flag: #comprehensive print
                 for i, s in enumerate(Servers): #servers
                     s_status = f"finishing at {s.endtime :.{decimals}f}" if s.endtime < np.Inf else "idle"
-                    logger.info('server' + (f' {i}' if self.n_servers > 1 else '') + f': {s_status}')
+                    logger.info("server" + (f" {i}" if self.n_servers > 1 else "") + f": {s_status}")
                 for i, q in enumerate(queues): #queues
                     q_status = [(float(f"{j.a :.{decimals}f}"), float(f"{j.w :.{decimals}f}")) for j in q]
-                    logger.info('queue' + (f' {i}' if JL.n_class > 1 else '') + f': {q_status}')
+                    logger.info("queue" + (f" {i}" if JL.n_class > 1 else "") + f": {q_status}")
 
     def evaluate(self): #evaluate results from simulations
         pass
