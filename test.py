@@ -173,6 +173,7 @@ scale = (1,1)
 interarrivals = [("exponential", 2), ("norm", (2,1)), ("rayleigh", 1)]
 workloads = [("exponential", 5), ("weibull", (1,2)), ("uniform", (0,0.5))]
 
+n = None
 time_end = 2000
 
 arrivals, service_workloads = [], []  # will be filled for each class
@@ -234,4 +235,15 @@ akw = [(j.a, j.k, j.w) for j in jobs_sorted]
 print(akw)
 
 
+JL = JobList()
 
+fig = JL.plot_a()
+fig = JL.plot_w()
+fig = JL.plot_k()
+
+
+JL = JobList(time_end = 200, interarrivals = [('exp', 0.5), ('exp', 2)], workloads = [('normal', (1, 1)), ('exp', 1)])
+
+fig = JL.plot_a()
+fig = JL.plot_w()
+fig = JL.plot_k()

@@ -2,6 +2,11 @@
 
 import numpy as np
 import heapq
+from itertools import cycle
+from collections import Counter
+
+import matplotlib.pyplot as plt
+plt.style.use('ggplot')
 
 from distribution import *
 
@@ -85,7 +90,7 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
         scale: a tuple indicating the values to scale the generated or provided interarrivals and workloads respectively
         '''
 
-        if scale[0] <= 0 or scale[1] <= 1:
+        if scale[0] <= 0 or scale[1] <= 0:
             raise Exception('scaling factors must be nonnegative')
         if mode not in ['trace', 'random']:
             raise Exception('mode must be either trace or random')
@@ -98,6 +103,7 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
                 interarrivals = [interarrivals]
             if type(workloads) == tuple: #one priority class only
                 workloads = [workloads]
+            self.n_class = len(interarrivals) #number of priority classes
             arrivals, service_workloads = [], [] #will be filled for each class
             for k in range(len(interarrivals)): #priority classes
                 #arrivals
@@ -111,6 +117,7 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
                 workload_element, _ = w_dis.generate_samples(n = len(arrivals_element), seed = seed, cumsum = False) #by number of arrivals
                 service_workloads.append(workload_element)
         else: #trace mode
+            self.n_class = len(interarrivals)  # number of priority classes
             arrivals = [] #only preparing the arrivals from interarrivals
             for interarrivals_element in interarrivals: #interarrivals_element contains interrrivals for a class
                 arrivals_element = [interarrivals_element[0]]
@@ -131,13 +138,40 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
             self.k.append(j.k)
 
     def plot_a(self):
-        pass
+        fig = plt.figure()
+        k_adj = [] #with -0.1, 0, 0.1 displacements
+        cycles = [cycle([-0.1, 0, 0.1]) for _ in range(self.n_class)]
+        for i in range(len(self.k)): #displacing points vertically slightly to each class
+            k = self.k[i]
+            k_adj.append(k + next(cycles[k]))
+        plt.scatter(self.a, k_adj, c = self.k, cmap = "cool", alpha = 0.5); #colouring by class
+        plt.yticks(range(self.n_class)); #only the priority classes
+        plt.ylim(-0.5, self.n_class - 0.5); #y axis limits
+        plt.ylabel('priority class');
+        plt.xlabel('time');
+        plt.title('Arrival Times');
+        plt.show();
+        return fig
 
     def plot_w(self):
-        pass
+        fig = plt.figure()
+        plt.hist([[w for w, c in zip(self.w, self.k) if c == k] for k in range(self.n_class)], #workloards by class
+                 alpha = 0.75, label = range(self.n_class));
+        plt.legend(loc = 'upper right', title = 'Priority Class');
+        plt.xlabel('service workload');
+        plt.title('Service Workload Distribution');
+        plt.show();
+        return fig
 
     def plot_k(self):
-        pass
+        fig = plt.figure()
+        class_count = Counter(self.k)
+        plt.bar(range(self.n_class), [class_count[k] for k in range(self.n_class)], align = 'center', alpha = 0.75);
+        plt.xlabel('priority class');
+        plt.xticks(range(self.n_class));
+        plt.title('Job Count by Priority Class');
+        plt.show();
+        return fig
 
 #%%
 class Simulation(object):
