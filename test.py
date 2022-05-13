@@ -32,11 +32,16 @@ J2 = Job(2, 2, 0)
 print(J2 < J1)
 print(J2 <= J1)
 
+#this to represent no more job arrivals
+Jnever = Job(np.Inf, np.Inf, 0, 'never')
+print(Jnever)
+
 
 #%% 2 Server
 
 S = Server()
 print(S)
+print(S.endtime, S.starttime)
 
 S.currentJob = J
 S.starttime = 2
@@ -45,10 +50,11 @@ print(S)
 
 S.update_status(10, J)
 print(S)
+print(S.endtime, S.starttime)
 
 S.update_status(15)
 print(S)
-
+print(S.endtime, S.starttime)
 
 #%% 3 Distribution
 
@@ -165,6 +171,13 @@ print(distribution.mean, np.mean(distribution.generate_samples(5000)[0]))
 print(distribution.var, np.var(distribution.generate_samples(5000)[0]))
 
 
+#reproducing
+distribution = dis("exp", (2,))
+sum(distribution.generate_samples(10)[0])
+
+np.random.seed(0)
+sum(distribution.generate_samples(10, seed = None)[0])
+
 #%% 4 JobList
 
 #random number generation test
@@ -217,7 +230,7 @@ jobs_sorted = [heapq.heappop(h) for i in range(len(h))]
 akw = [(j.a, j.k, j.w) for j in jobs_sorted]
 
 #check for sorting
-akw == sorted(akw, key = lambda x: (x[0], x[1]))
+print(akw == sorted(akw, key = lambda x: (x[0], x[1])))
 
 #ties in arrival time
 
@@ -247,3 +260,21 @@ JL = JobList(time_end = 200, interarrivals = [('exp', 0.5), ('exp', 2)], workloa
 fig = JL.plot_a()
 fig = JL.plot_w()
 fig = JL.plot_k()
+
+
+JL = JobList(25)
+sim = Simulation(JL)
+
+sim.run(printlog = True)
+
+
+JL = JobList(time_end = 25, interarrivals = [('exp', 0.5), ('exp', 2)], workloads = [('normal', (1, 1)), ('exp', 1)])
+sim = Simulation(JL, [Server() for _ in range(2)])
+
+sim.run(logfile = 'test.log', printlog = True, comprehensive_print = True)
+
+
+JL = JobList(time_end = 25, interarrivals = [('exp', 0.5), ('exp', 2)], workloads = [('normal', (1, 1)), ('exp', 1)])
+sim = Simulation(JL, [Server() for _ in range(3)])
+
+sim.run(logfile = 'test.log', printlog = True, comprehensive_print = True)
