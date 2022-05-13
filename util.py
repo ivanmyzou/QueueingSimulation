@@ -217,6 +217,7 @@ class Simulation(object):
         Servers = self.Servers.copy()
 
         #set up for response, waiting and service time by priority class and server busy times
+        #also count for jobs completed, started and still waiting
         self.statistics = {}
 
         if printlog: #print in console
@@ -306,3 +307,23 @@ class Simulation(object):
 
     def evaluate(self): #evaluate results from simulations
         pass
+
+#%%
+class MM1(Simulation):
+    '''a MM1 queueing simulation'''
+    pass
+
+#%%
+class MMn(Simulation):
+    '''a MMn queueing simulation'''
+    pass
+
+#%%
+class MG1(Simulation):
+    '''a MG1 queueing simulation'''
+    pass
+
+#%%
+class MGn(Simulation):
+    '''a MGn queueing simulation'''
+    pass
