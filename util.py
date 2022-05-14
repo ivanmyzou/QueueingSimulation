@@ -6,6 +6,9 @@ import random
 from itertools import cycle
 from collections import Counter
 
+import pickle
+import os
+
 from math import factorial
 
 import warnings
@@ -121,14 +124,15 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
                 workloads = [workloads]
             self.n_class = len(interarrivals) #number of priority classes
 
-            arrivals, service_workloads = [], [] #will be filled for each class
+            arrivals, job_interarrivals, service_workloads = [], [], [] #will be filled for each class
             interarrivals_dis, service_dis = [], [] #will be filled of each class
             for k in range(len(interarrivals)): #priority classes
                 #arrivals
                 dis_name, parameters = interarrivals[k]
                 arr_dis = dis(dis_name = dis_name, parameters = parameters, scale = scale[0])
                 interarrivals_dis.append((arr_dis.mean, arr_dis.var))
-                _, arrivals_element = arr_dis.generate_samples(n = n, time_end = time_end, seed = None)
+                interarrivals_element, arrivals_element = arr_dis.generate_samples(n = n, time_end = time_end, seed = None)
+                job_interarrivals.append(interarrivals_element) #the sole purpose of this is for trace saving
                 arrivals.append(arrivals_element) #arrival times
                 #workloads
                 dis_name, parameters = workloads[k]
@@ -140,6 +144,7 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
             self.service_dis = service_dis
 
         else: #trace mode
+            job_interarrivals = interarrivals.copy()
             self.n_class = len(interarrivals)  #number of priority classes
             arrivals = [] #only preparing the arrivals from interarrivals
             for interarrivals_element in interarrivals: #interarrivals_element contains interrrivals for a class
@@ -149,6 +154,9 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
                 arrivals.append(arrivals_element)
                 service_workloads = workloads #just to prepare for getting sorted job list
             self.interarrivals_dis, self.service_dis = None, None #not applicable
+
+        self.interarrival_trace = job_interarrivals
+        self.workload_trace = service_workloads
 
         h = [] #initialise for heap
         for k in range(len(arrivals)):  #a, w, k into Jobs
@@ -162,6 +170,25 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
             self.a.append(j.a)
             self.w.append(j.w)
             self.k.append(j.k)
+
+    @staticmethod
+    def create_from_file(dir = '.', folder_name = 'JobList', scale = (1,1)): #loading in interarrivals and workloads and create
+        path = dir + '/' + folder_name
+        with open(path + '/interarrivals', "rb") as f:
+            interarrival_trace = pickle.load(f)
+        with open(path + '/workload', "rb") as f:
+            workload_trace = pickle.load(f)
+        return JobList(mode = "trace", interarrivals = interarrival_trace, workloads = workload_trace,
+                       scale = scale)
+
+    def save_trace(self, dir = '.', folder_name = 'JobList'): #save interarrivals and workloads
+        path = dir + '/' + folder_name
+        if not os.path.exists(path):
+            os.mkdir(path)
+        with open(path + '/interarrivals', "wb") as f:
+            pickle.dump(self.interarrival_trace, f)
+        with open(path + '/workload', "wb") as f:
+            pickle.dump(self.workload_trace, f)
 
     def plot_a(self): #time series plot of arrival times
         fig = plt.figure()
