@@ -6,6 +6,10 @@ import random
 from itertools import cycle
 from collections import Counter
 
+from math import factorial
+
+import warnings
+
 import matplotlib.pyplot as plt
 plt.style.use("ggplot")
 
@@ -151,6 +155,8 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
             for a, w in zip(arrivals[k], service_workloads[k]):
                 heapq.heappush(h, Job(a, w, k))
         self.jobs = [heapq.heappop(h) for i in range(len(h))] #sorted by arrival and then priority class
+        for i, j in enumerate(self.jobs):
+            j.name = i #tagging all jobs to keep track of them in terms of order of arrival and priority class
         self.a, self.w, self.k = [], [], []
         for j in self.jobs:
             self.a.append(j.a)
@@ -218,7 +224,11 @@ class Simulation(object):
 
         #set up for response, waiting and service time by priority class and server busy times
         #also count for jobs completed, started and still waiting
-        self.statistics = {}
+        self.statistics = {"server_busy_time" : [0 for _ in range(len(Servers))],
+                           "waiting_times" : [0 for j in JL.jobs],
+                           "service_times": [0 for j in JL.jobs], #keeping track of this when they depart as servers might have different efficiencies
+                           "job_completed" : [0 for _ in range(JL.n_class)], "job_in_server" : [0 for _ in range(JL.n_class)], "job_in_queue" : [0 for _ in range(JL.n_class)]
+                           }
 
         if printlog: #print in console
             logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -283,6 +293,10 @@ class Simulation(object):
                     logger.info("departure at server" + (f" {event_type}" if self.n_servers > 1 else "") #if only one server not printing the server index
                                 )
                 s = Servers[event_type] #server of interest
+                self.statistics["server_busy_time"][event_type] += (s.endtime - s.starttime)  #update busy time
+                job_index = s.currentJob.name #this is the index in the job list
+                self.statistics["waiting_times"][job_index] = (s.starttime - s.currentJob.a)
+                self.statistics["service_times"][job_index] = (s.endtime - s.starttime) #equivalent to server busy time
 
                 for i, q in enumerate(queues): #iterate over queues of all priority classes in priority order
                     if q: #this queue is not empty
@@ -305,25 +319,52 @@ class Simulation(object):
                     q_status = [(float(f"{j.a :.{decimals}f}"), float(f"{j.w :.{decimals}f}")) for j in q]
                     logger.info("queue" + (f" {i}" if JL.n_class > 1 else "") + f": {q_status}")
 
-    def evaluate(self): #evaluate results from simulations
-        pass
+            self.statistics["response_times"] = (np.array(self.statistics["waiting_times"]) + np.array(self.statistics["service_times"])).tolist()
+            self.statistics["final_masterclock"] = masterclock #final time before exceeding max time or run out of upcoming events
+
+    def evaluate(self, exclusion = 0.25): #evaluate results from simulations
+        if not self.statistics: #simulation yet to be run
+            self.run()
+
+def ErlangC(c, lamb, mu):
+    rho = lamb/(c * mu)
+    denominator = 1 + (1 - rho) * (factorial(c) / (c * rho)**c) * np.sum([ (c * rho)**k / factorial(k) for k in range(c)])
+    return 1 / denominator
 
 #%%
-class MM1(Simulation):
-    '''a MM1 queueing simulation'''
+class MM1(Simulation): #single class
+    '''an MM1 queueing simulation'''
+    def __init__(self, lamb, mu, n = 100, time_end = None, seed = 0, scale = (1, 1), maxtime = np.Inf):
+        self.lamb, self.mu = lamb, mu
+        if lamb >= mu:
+            warnings.warn("instable queue", Warning)
+        else:
+            self.rho = lamb/mu
+            self.expected_response_time = 1 / (mu - lamb)
+        JL = JobList(n = n, time_end = time_end, mode = "random", interarrivals = ("exponential", lamb), workloads = ("exponential", mu),
+                     scale = scale, seed = seed)
+        Simulation.__init__(self, JobList = JL, Servers = [Server()], maxtime = maxtime)
+
+#%%
+class MMn(Simulation): #single class all servers have the same efficiency (1) so service workload is service time
+    '''an MMn queueing simulation'''
+    def __init__(self, lamb, mu, n_servers, n = 100, time_end = None, seed = 0, scale = (1, 1), maxtime = np.Inf):
+        self.lamb, self.mu, self.n_servers = lamb, mu, n_servers
+        if lamb >= (n_servers * mu):
+            warnings.warn("instable queue", Warning)
+        else:
+            self.rho = lamb/(n_servers * mu)
+            self.expected_response_time = ErlangC(n_servers, lamb, mu) / (n_servers * mu - lamb) + 1/mu
+        JL = JobList(n = n, time_end = time_end, mode = "random", interarrivals = ("exponential", lamb), workloads = ("exponential", mu),
+                     scale = scale, seed = seed)
+        Simulation.__init__(self, JobList = JL, Servers = [Server() for _ in range(n_servers)], maxtime = maxtime)
+
+#%%
+class MG1(Simulation): #single class
+    '''an MG1 queueing simulation'''
     pass
 
 #%%
-class MMn(Simulation):
-    '''a MMn queueing simulation'''
-    pass
-
-#%%
-class MG1(Simulation):
-    '''a MG1 queueing simulation'''
-    pass
-
-#%%
-class MGn(Simulation):
-    '''a MGn queueing simulation'''
+class MGn(Simulation): #single class all servers have the same efficiency (1) so service workload is service time
+    '''an MGn queueing simulation'''
     pass

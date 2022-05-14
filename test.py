@@ -287,3 +287,76 @@ print(JL.a)
 sim = Simulation(JL, [Server() for _ in range(4)])
 sim.run(printlog = True, comprehensive_print = True, decimals = 2)
 
+#test simulation
+JL = JobList(time_end = 2000, interarrivals = ('exp', 1), workloads = ('exp', 3))
+sim = Simulation(JL, [Server()])
+
+sim.run(printlog = True, comprehensive_print = True)
+print(np.mean(sim.statistics['response_times'][500:]))
+
+
+mm1_sim = MM1(1, 2, time_end = 2000, seed = 1)
+mm1_sim.run()
+print(np.mean(mm1_sim.statistics['response_times'][500:]))
+
+mm1_sim = MM1(1, 2, time_end = 2000, seed = 2)
+mm1_sim.run()
+print(np.mean(mm1_sim.statistics['response_times'][500:]))
+
+mm1_sim = MM1(1, 2, time_end = 2000, seed = 3)
+mm1_sim.run()
+print(np.mean(mm1_sim.statistics['response_times'][500:]))
+
+mm1_sim = MM1(0.75, 2, time_end = 2000, seed = 0)
+mm1_sim.run()
+print(np.mean(mm1_sim.statistics['response_times'][500:]), mm1_sim.expected_response_time)
+
+mm1_sim = MM1(0.75, 2, time_end = 2000, seed = 1)
+mm1_sim.run()
+print(np.mean(mm1_sim.statistics['response_times'][500:]), mm1_sim.expected_response_time)
+
+mm1_sim = MM1(0.75, 2, time_end = 2000, seed = 2)
+mm1_sim.run()
+print(np.mean(mm1_sim.statistics['response_times'][500:]), mm1_sim.expected_response_time)
+
+mm1_sim = MM1(0.75, 2, time_end = 5000, seed = 0)
+mm1_sim.run()
+print(np.mean(mm1_sim.statistics['response_times'][500:]), mm1_sim.expected_response_time)
+
+mm1_sim = MM1(1, 1.5, time_end = 2000, seed = 0)
+mm1_sim.run()
+print(np.mean(mm1_sim.statistics['response_times'][500:]), mm1_sim.expected_response_time)
+
+mm1_sim = MM1(1, 1.5, time_end = 2000, seed = 1)
+mm1_sim.run()
+print(np.mean(mm1_sim.statistics['response_times'][500:]), mm1_sim.expected_response_time)
+
+mm1_sim = MM1(1, 1.5, time_end = 2000, seed = 2)
+mm1_sim.run()
+print(np.mean(mm1_sim.statistics['response_times'][1000:]), mm1_sim.expected_response_time)
+
+
+mmn_sim = MMn(1, 1, 2, time_end = 2000, seed = 0)
+mmn_sim.run()
+print(np.mean(mmn_sim.statistics['response_times'][1000:]), mmn_sim.expected_response_time)
+
+mmn_sim = MMn(1, 1, 2, time_end = 2000, seed = 1)
+mmn_sim.run()
+print(np.mean(mmn_sim.statistics['response_times'][1000:]), mmn_sim.expected_response_time)
+
+mmn_sim = MMn(1, 0.5, 5, time_end = 2000, seed = 0)
+mmn_sim.run()
+print(np.mean(mmn_sim.statistics['response_times'][1000:]), mmn_sim.expected_response_time)
+
+mmn_sim = MMn(1, 0.5, 4, time_end = 2000, seed = 0)
+mmn_sim.run()
+print(np.mean(mmn_sim.statistics['response_times'][1000:]), mmn_sim.expected_response_time)
+
+mmn_sim = MMn(1, 0.5, 4, time_end = 2000, seed = 1)
+mmn_sim.run()
+print(np.mean(mmn_sim.statistics['response_times'][1000:]), mmn_sim.expected_response_time)
+
+mmn_sim = MMn(1, 0.5, 4, time_end = 2000, seed = 2)
+mmn_sim.run()
+print(np.mean(mmn_sim.statistics['response_times'][1000:]), mmn_sim.expected_response_time)
+
