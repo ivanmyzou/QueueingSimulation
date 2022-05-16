@@ -350,8 +350,27 @@ class Simulation(object):
             self.statistics["final_masterclock"] = masterclock #final time before exceeding max time or run out of upcoming events
 
     def evaluate(self, exclusion = 0.25): #evaluate results from simulations
+        if exclusion < 0 or exclusion >= 1:
+            raise Exception('initial transient data exclusion must be a value between 0 and 1')
         if not self.statistics: #simulation yet to be run
             self.run()
+        JL = self.JobList
+        #average response times, waiting times and service times by class
+        (self.statistics['avg_response_times'],
+         self.statistics['avg_waiting_times'],
+         self.statistics['avg_service_times']
+         ) = {i:[] for i in range(JL.n_class)}, {i:[] for i in range(JL.n_class)}, {i:[] for i in range(JL.n_class)}
+        for rt, wt, st, k in zip(self.statistics["response_times"], self.statistics["waiting_times"], self.statistics["service_times"],
+                                 JL.k): #reorganise by priority class
+            self.statistics['avg_response_times'][k].append(rt)
+            self.statistics['avg_waiting_times'][k].append(wt)
+            self.statistics['avg_service_times'][k].append(st)
+        class_count = Counter(JL.k)
+        for k in range(JL.n_class):
+            start = round(class_count[k] * exclusion)
+            self.statistics['avg_response_times'][k] = np.average(self.statistics['avg_response_times'][k][start:])
+            self.statistics['avg_waiting_times'][k] = np.average(self.statistics['avg_waiting_times'][k][start:])
+            self.statistics['avg_service_times'][k] = np.average(self.statistics['avg_service_times'][k][start:])
 
 def ErlangC(c, lamb, mu):
     rho = lamb/(c * mu)

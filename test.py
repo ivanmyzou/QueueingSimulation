@@ -404,3 +404,18 @@ mmn_sim = MMn(1, 0.5, 4, time_end = 2000, seed = 2)
 mmn_sim.run()
 print(np.mean(mmn_sim.statistics['response_times'][1000:]), mmn_sim.expected_response_time)
 
+#====================================================================================================
+#====================================================================================================
+#%% VI Evaluations
+
+# 6.1 basics
+JL = JobList(time_end = 500, interarrivals = [('exp', 0.5), ('exp', 2)], workloads = [('normal', (1, 1)), ('exp', 1)])
+sim = Simulation(JL, [Server() for _ in range(4)])
+
+sim.evaluate()
+
+print(sim.statistics.keys())
+
+print(sim.statistics['avg_response_times'])
+print(sim.statistics['avg_waiting_times'])
+print(sim.statistics['avg_service_times'])
