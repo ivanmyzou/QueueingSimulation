@@ -338,6 +338,7 @@ sim = Simulation(JL, [Server()])
 
 sim.run(printlog = True, comprehensive_print = True)
 print(np.mean(sim.statistics['response_times'][500:]))
+print(len(mm1_sim.statistics['server_busy_time'][0]))
 
 mm1_sim = MM1(1, 2, time_end = 2000, seed = 1)
 mm1_sim.run()
@@ -355,6 +356,8 @@ print(np.mean(mm1_sim.statistics['response_times'][500:]))
 mm1_sim = MM1(0.75, 2, time_end = 2000, seed = 0)
 mm1_sim.run()
 print(np.mean(mm1_sim.statistics['response_times'][500:]), mm1_sim.expected_response_time)
+mm1_sim.evaluate()
+print(mm1_sim.statistics['server_utilisation'])
 
 mm1_sim = MM1(0.75, 2, time_end = 2000, seed = 1)
 mm1_sim.run()

@@ -251,7 +251,7 @@ class Simulation(object):
 
         #set up for response, waiting and service time by priority class and server busy times
         #also count for jobs completed, started and still waiting
-        self.statistics = {"server_busy_time" : [0 for _ in range(len(Servers))],
+        self.statistics = {"server_busy_time" : [[] for _ in range(len(Servers))],
                            "waiting_times" : [0 for j in JL.jobs],
                            "service_times": [0 for j in JL.jobs], #keeping track of this when they depart as servers might have different efficiencies
                            "job_completed" : [0 for _ in range(JL.n_class)], "job_in_server" : [0 for _ in range(JL.n_class)], "job_in_queue" : [0 for _ in range(JL.n_class)]
@@ -320,7 +320,7 @@ class Simulation(object):
                     logger.info("departure at server" + (f" {event_type}" if self.n_servers > 1 else "") #if only one server not printing the server index
                                 )
                 s = Servers[event_type] #server of interest
-                self.statistics["server_busy_time"][event_type] += (s.endtime - s.starttime)  #update busy time
+                self.statistics["server_busy_time"][event_type].append((s.starttime, s.endtime))  #update busy time period
                 job_index = s.currentJob.name #this is the index in the job list
                 self.statistics["waiting_times"][job_index] = (s.starttime - s.currentJob.a)
                 self.statistics["service_times"][job_index] = (s.endtime - s.starttime) #equivalent to server busy time
@@ -354,6 +354,9 @@ class Simulation(object):
             raise Exception('initial transient data exclusion must be a value between 0 and 1')
         if not self.statistics: #simulation yet to be run
             self.run()
+        cutoff_time = self.statistics["final_masterclock"] * exclusion
+        self.cutoff_time = cutoff_time
+        time_period = self.statistics["final_masterclock"] - cutoff_time
         JL = self.JobList
         #average response times, waiting times and service times by class
         (self.statistics['avg_response_times'],
@@ -371,6 +374,17 @@ class Simulation(object):
             self.statistics['avg_response_times'][k] = np.average(self.statistics['avg_response_times'][k][start:])
             self.statistics['avg_waiting_times'][k] = np.average(self.statistics['avg_waiting_times'][k][start:])
             self.statistics['avg_service_times'][k] = np.average(self.statistics['avg_service_times'][k][start:])
+        #utilisation of servers
+        self.statistics['server_utilisation'] = [0 for _ in range(len(self.statistics['server_busy_time']))]
+        for s in range(len(self.statistics['server_busy_time'])):
+            busy_periods = self.statistics['server_busy_time'][s]
+            for start_time, end_time in busy_periods:
+                if end_time <= cutoff_time:
+                    continue
+                elif (end_time > cutoff_time) and (start_time <= cutoff_time): #started before cutoff time but ended after it
+                    self.statistics['server_utilisation'][s] += ((end_time - cutoff_time) / time_period)
+                else:
+                    self.statistics['server_utilisation'][s] += ((end_time - start_time) / time_period)
 
 def ErlangC(c, lamb, mu):
     rho = lamb/(c * mu)
