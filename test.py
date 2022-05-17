@@ -414,10 +414,20 @@ print(np.mean(mmn_sim.statistics['response_times'][1000:]), mmn_sim.expected_res
 mmn_sim = MMn(1, 0.5, 4, time_end = 2000, seed = 1)
 mmn_sim.run()
 print(np.mean(mmn_sim.statistics['response_times'][1000:]), mmn_sim.expected_response_time)
+mmn_sim.evaluate()
+print(mmn_sim.statistics['server_utilisation'], mmn_sim.rho)
 
 mmn_sim = MMn(1, 0.5, 4, time_end = 2000, seed = 2)
 mmn_sim.run()
 print(np.mean(mmn_sim.statistics['response_times'][1000:]), mmn_sim.expected_response_time)
+mmn_sim.evaluate()
+print(mmn_sim.statistics['server_utilisation'], mmn_sim.rho)
+
+mmn_sim = MMn(1, 0.5, 5, time_end = 4000, seed = 2)
+mmn_sim.run()
+print(np.mean(mmn_sim.statistics['response_times'][1000:]), mmn_sim.expected_response_time)
+mmn_sim.evaluate()
+print(mmn_sim.statistics['server_utilisation'], mmn_sim.rho)
 
 #====================================================================================================
 #====================================================================================================

@@ -238,7 +238,7 @@ class Simulation(object):
             raise Exception("max time must be positive")
         self.maxtime = maxtime
 
-    def run(self, logfile = "", printlog = False, comprehensive_print = False, decimals = 5): #run simulations
+    def run(self, logfile = "", printlog = False, comprehensive_print = False, decimals = 5, server_assign = "random"): #run simulations
 
         #setting up the loggers
         logger.handlers = [] #cleaning up handlers to avoid duplicated printing
@@ -302,17 +302,31 @@ class Simulation(object):
                     logger.info(f"job arrival with workload {arrived_job.w :.{decimals}f}" +
                                 (f" and priority class {arrived_job.k}" if JL.n_class > 1 else "")) #not printing priority class if there is only class
 
-                for i, s in enumerate(Servers): #iterate over all servers to see if the arrived job can be assigned
-                    if s.endtime == np.Inf: #idle server found
+                if server_assign == "random":
+                    idle_servers = [i for i, s in enumerate(Servers) if s.endtime == np.Inf]
+                    if idle_servers: #at least one server idle
+                        s = Servers[random.choice(idle_servers)] #random server
                         s.update_status(masterclock, arrived_job)
                         if log_flag:
-                            logger.info("assigning into server" + (f" {i} " if self.n_servers > 1 else " ") #if only one server not printing the server index
+                            logger.info("assigning into server" + (
+                                f" {i} " if self.n_servers > 1 else " ")  # if only one server not printing the server index
                                         + f"and will finish at {s.endtime :.{decimals}f}")
-                        break
-                else: #did not break so go into the queue
-                    if log_flag:
-                        logger.info("go into queue")
-                    queues[arrived_job.k].append(arrived_job) #append into the queue of the corresponding priority class
+                    else: #all server busy
+                        if log_flag:
+                            logger.info("go into queue")
+                        queues[arrived_job.k].append(arrived_job) #append into the queue of the corresponding priority class
+                else: #take priorities by order of servers
+                    for i, s in enumerate(Servers): #iterate over all servers to see if the arrived job can be assigned
+                        if s.endtime == np.Inf: #idle server found
+                            s.update_status(masterclock, arrived_job)
+                            if log_flag:
+                                logger.info("assigning into server" + (f" {i} " if self.n_servers > 1 else " ") #if only one server not printing the server index
+                                            + f"and will finish at {s.endtime :.{decimals}f}")
+                            break
+                    else: #did not break so go into the queue
+                        if log_flag:
+                            logger.info("go into queue")
+                        queues[arrived_job.k].append(arrived_job) #append into the queue of the corresponding priority class
 
             ##### departure event
             else: #departure (event_type is the index of the server)
