@@ -254,7 +254,7 @@ class Simulation(object):
         self.statistics = {"server_busy_time" : [[] for _ in range(len(Servers))],
                            "waiting_times" : [0 for j in JL.jobs],
                            "service_times": [0 for j in JL.jobs], #keeping track of this when they depart as servers might have different efficiencies
-                           "job_completed" : [0 for _ in range(JL.n_class)], "job_in_server" : [0 for _ in range(JL.n_class)], "job_in_queue" : [0 for _ in range(JL.n_class)]
+                           "jobs_completed" : [0 for _ in range(JL.n_class)], "jobs_in_server" : [0 for _ in range(JL.n_class)], "jobs_in_queue" : [0 for _ in range(JL.n_class)]
                            }
 
         if printlog: #print in console
@@ -338,6 +338,7 @@ class Simulation(object):
                 job_index = s.currentJob.name #this is the index in the job list
                 self.statistics["waiting_times"][job_index] = (s.starttime - s.currentJob.a)
                 self.statistics["service_times"][job_index] = (s.endtime - s.starttime) #equivalent to server busy time
+                self.statistics["jobs_completed"][s.currentJob.k] += 1
 
                 for i, q in enumerate(queues): #iterate over queues of all priority classes in priority order
                     if q: #this queue is not empty
@@ -360,8 +361,15 @@ class Simulation(object):
                     q_status = [(float(f"{j.a :.{decimals}f}"), float(f"{j.w :.{decimals}f}")) for j in q]
                     logger.info("queue" + (f" {i}" if JL.n_class > 1 else "") + f": {q_status}")
 
-            self.statistics["response_times"] = (np.array(self.statistics["waiting_times"]) + np.array(self.statistics["service_times"])).tolist()
-            self.statistics["final_masterclock"] = masterclock #final time before exceeding max time or run out of upcoming events
+        self.statistics["response_times"] = (np.array(self.statistics["waiting_times"]) + np.array(self.statistics["service_times"])).tolist()
+        self.statistics["final_masterclock"] = masterclock #final time before exceeding max time or run out of upcoming events
+
+        #remaining ones
+        for s in Servers:
+            if s.currentJob: #busy servers
+                self.statistics["jobs_in_server"][s.currentJob.k] += 1
+        for i in range(len(queues)):
+            self.statistics["jobs_in_queue"][i] = len(queues[i])
 
     def evaluate(self, exclusion = 0.25): #evaluate results from simulations
         if exclusion < 0 or exclusion >= 1:

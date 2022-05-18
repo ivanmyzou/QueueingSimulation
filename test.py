@@ -338,7 +338,10 @@ sim = Simulation(JL, [Server()])
 
 sim.run(printlog = True, comprehensive_print = True)
 print(np.mean(sim.statistics['response_times'][500:]))
-print(len(mm1_sim.statistics['server_busy_time'][0]))
+print(len(sim.statistics['server_busy_time'][0]))
+print(sim.statistics['jobs_completed'])
+print(sim.statistics['jobs_in_server'])
+print(sim.statistics['jobs_in_queue'])
 
 mm1_sim = MM1(1, 2, time_end = 2000, seed = 1)
 mm1_sim.run()
@@ -444,3 +447,4 @@ print(sim.statistics.keys())
 print(sim.statistics['avg_response_times'])
 print(sim.statistics['avg_waiting_times'])
 print(sim.statistics['avg_service_times'])
+
