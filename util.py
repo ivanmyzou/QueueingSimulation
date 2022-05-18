@@ -88,6 +88,10 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
     def __init__(self, n = 100, time_end = None, mode = "random", interarrivals = ("exponential", 1), workloads = ("exponential", 1),
                  scale = (1, 1), seed = 0): #trace mode or random mode
         '''
+        n: number of jobs generated for each priority class; relevant only in random mode
+
+        time_end: end time to generate jobs with arrival up to; relevant only in random mode
+
         mode: defaults to "random"; either "random" or "trace";
         when it is "random", generate interarrival times and service workloads based on distributions specified;
         when it is "trace", interarrival times and service workloads come from direct inputs
@@ -101,6 +105,8 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
         when in trace mode, for each priority class, the element is a list with its elements representing the work loads
 
         scale: a tuple indicating the values to scale the generated or provided interarrivals and workloads respectively
+
+        seed: random seed
         '''
 
         if seed != None: #setting seed
@@ -444,9 +450,15 @@ class MMn(Simulation): #single class all servers have the same efficiency (1) so
 #%%
 class MG1(Simulation): #single class
     '''an MG1 queueing simulation'''
-    pass
+    def __init__(self, lamb, mu, service_workload, n = 100, time_end = None, seed = 0, scale = (1, 1), maxtime = np.Inf):
+        dis_name, dis_parameters = service_workload
+        service_distribution = dis(dis_name, dis_parameters)
+        mu = 1 / service_distribution.mean #service rate
 
 #%%
 class MGn(Simulation): #single class all servers have the same efficiency (1) so service workload is service time
     '''an MGn queueing simulation'''
-    pass
+    def __init__(self, lamb, mu, service_workload, n_servers, n = 100, time_end = None, seed = 0, scale = (1, 1), maxtime = np.Inf):
+        dis_name, dis_parameters = service_workload
+        service_distribution = dis(dis_name, dis_parameters)
+        mu = 1 / service_distribution.mean #service rate
