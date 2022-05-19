@@ -432,6 +432,24 @@ print(np.mean(mmn_sim.statistics['response_times'][1000:]), mmn_sim.expected_res
 mmn_sim.evaluate()
 print(mmn_sim.statistics['server_utilisation'], mmn_sim.rho)
 
+# 5.4 GGn
+
+ggn = GGn(("uniform", (0,2)), ("uniform", (0,1)), 3, time_end = 2000, seed = 0)
+ggn.run()
+print(np.mean(ggn.statistics['response_times'][1000:]), ggn.expected_response_time)
+
+ggn = GGn(("uniform", (0,1)), ("uniform", (0,1)), 2, time_end = 5000, seed = 0)
+ggn.run()
+print(np.mean(ggn.statistics['response_times'][1000:]), ggn.expected_response_time)
+
+ggn = GGn(("uniform", (0,1)), ("beta", (1,1)), 5, time_end = 5000, seed = 0)
+ggn.run()
+print(np.mean(ggn.statistics['response_times'][1000:]), ggn.expected_response_time)
+
+ggn = GGn(("normal", (0,1)), ("beta", (1,2)), 8, time_end = 5000, seed = 0)
+ggn.run()
+print(np.mean(ggn.statistics['response_times'][1000:]), ggn.expected_response_time)
+
 #====================================================================================================
 #====================================================================================================
 #%% VI Evaluations

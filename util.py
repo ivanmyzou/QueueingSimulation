@@ -9,7 +9,7 @@ from collections import Counter
 import pickle
 import os
 
-from math import factorial
+from math import factorial, sqrt
 
 import warnings
 
@@ -448,17 +448,17 @@ class MMn(Simulation): #single class all servers have the same efficiency (1) so
         Simulation.__init__(self, JobList = JL, Servers = [Server() for _ in range(n_servers)], maxtime = maxtime)
 
 #%%
-class MG1(Simulation): #single class
-    '''an MG1 queueing simulation'''
-    def __init__(self, lamb, mu, service_workload, n = 100, time_end = None, seed = 0, scale = (1, 1), maxtime = np.Inf):
+class GGn(Simulation): #single class all servers have the same efficiency (1) so service workload is service time
+    '''an GGn queueing simulation'''
+    def __init__(self, interarrival_time, service_workload, n_servers, n = 100, time_end = None, seed = 0, scale = (1, 1), maxtime = np.Inf):
+        dis_name, dis_parameters = interarrival_time
+        interarrival_distribution = dis(dis_name, dis_parameters)
         dis_name, dis_parameters = service_workload
         service_distribution = dis(dis_name, dis_parameters)
+        lamb = 1 / interarrival_distribution.mean #arrival rate
         mu = 1 / service_distribution.mean #service rate
-
-#%%
-class MGn(Simulation): #single class all servers have the same efficiency (1) so service workload is service time
-    '''an MGn queueing simulation'''
-    def __init__(self, lamb, mu, service_workload, n_servers, n = 100, time_end = None, seed = 0, scale = (1, 1), maxtime = np.Inf):
-        dis_name, dis_parameters = service_workload
-        service_distribution = dis(dis_name, dis_parameters)
-        mu = 1 / service_distribution.mean #service rate
+        CV_a, CV_s = sqrt(interarrival_distribution.var) / interarrival_distribution.mean, sqrt(service_distribution.var) / service_distribution.mean #coefficient of variation
+        self.expected_response_time = ErlangC(n_servers, lamb, mu) / (n_servers * mu - lamb) * (CV_a**2 + CV_s**2) / 2 + service_distribution.mean #only approximation
+        JL = JobList(n = n, time_end = time_end, mode = "random", interarrivals = interarrival_time, workloads = service_workload,
+                     scale = scale, seed = seed)
+        Simulation.__init__(self, JobList = JL, Servers = [Server() for _ in range(n_servers)], maxtime = maxtime)
