@@ -245,7 +245,7 @@ class Simulation(object):
         self.maxtime = maxtime
 
     def run(self, logfile = "", printlog = False, comprehensive_print = False, decimals = 5, server_assign = "random"): #run simulations
-
+        '''run simulations'''
         #setting up the loggers
         logger.handlers = [] #cleaning up handlers to avoid duplicated printing
 
@@ -378,6 +378,7 @@ class Simulation(object):
             self.statistics["jobs_in_queue"][i] = len(queues[i])
 
     def evaluate(self, exclusion = 0.25): #evaluate results from simulations
+        '''evaluate core performance of the system'''
         if exclusion < 0 or exclusion >= 1:
             raise Exception('initial transient data exclusion must be a value between 0 and 1')
         if not self.statistics: #simulation yet to be run
