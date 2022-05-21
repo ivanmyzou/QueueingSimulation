@@ -203,13 +203,13 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
         for i in range(len(self.k)): #displacing points vertically slightly to each class
             k = self.k[i]
             k_adj.append(k + next(cycles[k]))
-        plt.scatter(self.a, k_adj, c = self.k, cmap = "cool", alpha = 0.5); #colouring by class
+        plt.scatter(self.a, k_adj, c = self.k, cmap = "cool", alpha = 0.75); #colouring by class
         plt.yticks(range(self.n_class)); #only the priority classes
         plt.ylim(-0.5, self.n_class - 0.5); #y axis limits
         plt.ylabel("priority class");
         plt.xlabel("time");
         plt.title("Arrival Times");
-        plt.show(block = False);
+        plt.show()
         return fig
 
     def plot_w(self): #histogram plot of work loads
@@ -219,7 +219,7 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
         plt.legend(loc = "upper right", title = "Priority Class");
         plt.xlabel("service workload");
         plt.title("Service Workload Distribution");
-        plt.show(block = False);
+        plt.show()
         return fig
 
     def plot_k(self): #count by priority class
@@ -229,7 +229,7 @@ class JobList(object): #sort by (arrival time, priority class) in ascending orde
         plt.xlabel("priority class");
         plt.xticks(range(self.n_class));
         plt.title("Job Count by Priority Class");
-        plt.show(block = False);
+        plt.show()
         return fig
 
 #%%
