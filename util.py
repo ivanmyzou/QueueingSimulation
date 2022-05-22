@@ -246,6 +246,7 @@ class Simulation(object):
 
     def run(self, logfile = "", printlog = False, comprehensive_print = False, decimals = 5, server_assign = "random"): #run simulations
         '''run simulations'''
+        ##### I. Setup
         #setting up the loggers
         logger.handlers = [] #cleaning up handlers to avoid duplicated printing
 
@@ -280,7 +281,7 @@ class Simulation(object):
             logger.info("=" * 10 + f" masterclock {masterclock :.{decimals}f}")
             logger.info("")
 
-        #simulation loop
+        ##### II. Simulation Loop
         while masterclock <= self.maxtime:
             #advance in time
             potential_events = [(jobs[0].a, self.n_servers)] + [(Servers[i].endtime, i) for i in range(self.n_servers)] #next arrival or job completion at a processor
@@ -367,6 +368,7 @@ class Simulation(object):
                     q_status = [(float(f"{j.a :.{decimals}f}"), float(f"{j.w :.{decimals}f}")) for j in q]
                     logger.info("queue" + (f" {i}" if JL.n_class > 1 else "") + f": {q_status}")
 
+        ##### III. Additional Summary
         self.statistics["response_times"] = (np.array(self.statistics["waiting_times"]) + np.array(self.statistics["service_times"])).tolist()
         self.statistics["final_masterclock"] = masterclock #final time before exceeding max time or run out of upcoming events
 
@@ -416,6 +418,7 @@ class Simulation(object):
                     self.statistics['server_utilisation'][s] += ((end_time - start_time) / time_period)
 
 def ErlangC(c, lamb, mu):
+    '''Erlang C Formula'''
     rho = lamb/(c * mu)
     denominator = 1 + (1 - rho) * (factorial(c) / (c * rho)**c) * np.sum([ (c * rho)**k / factorial(k) for k in range(c)])
     return 1 / denominator
