@@ -447,7 +447,7 @@ class MMn(Simulation): #single class all servers have the same efficiency (1) so
         else:
             self.rho = lamb/(n_servers * mu)
             self.expected_response_time = ErlangC(n_servers, lamb, mu) / (n_servers * mu - lamb) + 1/mu
-        JL = JobList(n = n, time_end = time_end, mode = "random", interarrivals = ("exponential", lamb), workloads = ("exponential", mu),
+        JL = JobList(n = n, time_end = time_end, mode = "random", interarrivals = ("exponential", lamb), workloads = [("exponential", mu) for _ in range(n_servers)],
                      scale = scale, seed = seed)
         Simulation.__init__(self, JobList = JL, Servers = [Server() for _ in range(n_servers)], maxtime = maxtime)
 
