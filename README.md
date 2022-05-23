@@ -4,7 +4,7 @@
     <img src="icon/queue.png" alt="Logo" width="230" height="75">
   </a>
   
-  Simulation of Queuing Process
+  Simulation of Queuing Processes
 </div>
 
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
