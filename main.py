@@ -107,7 +107,7 @@ class QS(tk.Frame):
         #advanced scenarios
         self.advanced = ttk.Frame(self)
         self.advanced.grid(row=11, column=0, columnspan=10)
-        tk.Label(self.advanced, text=' Order \n by \n Priority \n Class ', anchor=tk.CENTER,
+        tk.Label(self.advanced, text=' Order \n by \n   Priority   \n Class ', anchor=tk.CENTER,
                  font=tkinter.font.Font(family='Helvetica', size=10)).grid(row=1, column=0)
 
         ttk.Label(self.advanced, text = 'Interarrival Times', font = tkinter.font.Font(family='Helvetica', size=10)).grid(row=0, column=1)
@@ -150,8 +150,10 @@ class QS(tk.Frame):
 
         #simulation
         ttk.Label(self, text='\n').grid(row=16, column=0)  # padding
-        self.generate = ttk.Button(self, text = 'Run Simulation', width = 25)
-        self.generate.grid(row=17, column=0)
+        self.sim = ttk.Button(self, text = 'Run Simulation', width = 25)
+        self.sim.grid(row=17, column=0)
+        self.eval = ttk.Button(self, text = 'Evaluate Performance', width=25)
+        self.eval.grid(row=17, column=2, columnspan=3)
 
     def selectMG_1(self, event): #disables distribution selections
         MG = event.widget.get()
