@@ -417,6 +417,26 @@ class Simulation(object):
                 else:
                     self.statistics['server_utilisation'][s] += ((end_time - start_time) / time_period)
 
+    def plot_r(self): #histogram plot of work loads
+        fig = plt.figure()
+        plt.hist([[w for w, c in zip(self.statistics['response_times'], self.JobList.k) if c == k] for k in range(self.JobList.n_class)], #workloads by class
+                 alpha = 0.75, label = range(self.JobList.n_class));
+        plt.legend(loc = "upper right", title = "Priority Class");
+        plt.xlabel("response time");
+        plt.title("Response Time Distribution");
+        plt.show()
+        return fig
+
+    def plot_w(self): #histogram plot of work loads
+        fig = plt.figure()
+        plt.hist([[w for w, c in zip(self.statistics['waiting_times'], self.JobList.k) if c == k] for k in range(self.JobList.n_class)], #workloads by class
+                 alpha = 0.75, label = range(self.JobList.n_class));
+        plt.legend(loc = "upper right", title = "Priority Class");
+        plt.xlabel("response time");
+        plt.title("Response Time Distribution");
+        plt.show()
+        return fig
+
 def ErlangC(c, lamb, mu):
     '''Erlang C Formula'''
     rho = lamb/(c * mu)

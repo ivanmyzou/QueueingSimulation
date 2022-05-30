@@ -466,3 +466,16 @@ print(sim.statistics['avg_response_times'])
 print(sim.statistics['avg_waiting_times'])
 print(sim.statistics['avg_service_times'])
 
+# 6.2 plots
+JL = JobList(time_end = 1000,
+             interarrivals = [('exp', 1), ('exp', 0.5), ('exp', 0.5)],
+             workloads = [('exp', 0.5), ('exp', 0.5), ('exp', 0.5)])
+sim = Simulation(JL, [Server() for _ in range(5)])
+sim.evaluate()
+
+len(sim.statistics['response_times']), len(sim.JobList.k)
+len(sim.statistics['waiting_times']), len(sim.JobList.k)
+
+sim.plot_r()
+sim.plot_w()
+
